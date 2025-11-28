@@ -1,9 +1,10 @@
 import express from "express";
 import { db } from "../db/index.js";
 import { usersTable } from "../model/users.model.js";
-import { eq } from "drizzle-orm";
-import { createHmac, randomBytes } from "crypto";
+import {getUserByEmail} from "../service/user.service.js"
 import { signupPostRequestBodySchema } from "../validation/request.validation.js";
+import hashedPasswordWithSalt from '../utils/hash.util.js';
+
 
 const router = express.Router();
 
@@ -23,10 +24,7 @@ router.post("/signup", async (req, res) => {
   const { firstname, lastname, email, password } = validationResult.data;
 
   // 🔍 Check existing user
-  const [existingUser] = await db
-    .select({ id: usersTable.id })
-    .from(usersTable)
-    .where(eq(usersTable.email, email));
+  const existingUser =await getUserByEmail(email)
 
   if (existingUser) {
     return res
@@ -35,10 +33,7 @@ router.post("/signup", async (req, res) => {
   }
 
   // 🔐 Hash password
-  const salt = randomBytes(256).toString("hex");
-  const hashedPassword = createHmac("sha256", salt)
-    .update(password)
-    .digest("hex");
+  const {salt,password:hashedPassword} =hashedPasswordWithSalt(password)
 
   // 📥 Insert user
   const [user] = await db
