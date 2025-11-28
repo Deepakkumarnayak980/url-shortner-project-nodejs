@@ -1,16 +1,34 @@
 import jwt from "jsonwebtoken";
-import {userTokenSchema} from '../validation/token.validation.js';
+import { userTokenSchema } from "../validation/token.validation.js";
 
-const JWT_SECRET =process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-export async function createUserToken(payload){
+// Create User Token
+export async function createUserToken(payload) {
+    // Validate payload with Zod
+    const validationResult = await userTokenSchema.safeParseAsync(payload);
 
-    const validationResult =await userTokenSchema.safeParseAsync(payload)
+    if (validationResult.error) {
+        throw new Error(validationResult.error.message);
+    }
 
-    if(validationResult.error) throw new Error(validationResult.error.message)
+    const safeData = validationResult.data;
 
-    const payloadValidatedData =validationResult.data;
+    // Add token expiry (recommended)
+    const token = jwt.sign(
+        safeData,
+        JWT_SECRET,
+        { expiresIn: "7d" } // <-- good practice!
+    );
 
-    const token =jwt.sign(payloadValidatedData,JWT_SECRET);
     return token;
+}
+
+// Validate Token
+export function validationUserToken(token) {
+    try {
+        return jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+        return null; // invalid or expired token
+    }
 }

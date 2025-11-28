@@ -1,12 +1,15 @@
 import express from 'express';
 import 'dotenv/config';
 import userRouter from './router/user.router.js';
+import { authenticationMiddleware } from './middleware/auth.middleware.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 8000;
 
 // Must be before routes
 app.use(express.json());
+//middleware
+app.use(authenticationMiddleware)
 
 // Root route must send a response
 app.get('/', (req, res) => {
