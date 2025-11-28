@@ -7,7 +7,7 @@ import {
   loginPostRequestBodySchema,
 } from "../validation/request.validation.js";
 import { hashedPasswordWithSalt } from "../utils/hash.util.js";
-import jwt from "jsonwebtoken";
+import { createUserToken } from "../utils/token.js";
 
 const router = express.Router();
 
@@ -83,11 +83,7 @@ router.post("/login", async (req, res) => {
   }
 
   // 🎫 Generate JWT
-  const token = jwt.sign(
-    { id: user.id, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" }
-  );
+ const token =await createUserToken({id:user.id})
 
   return res.json({ token });
 });
