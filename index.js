@@ -2,6 +2,7 @@ import express from 'express';
 import 'dotenv/config';
 import userRouter from './router/user.router.js';
 import { authenticationMiddleware } from './middleware/auth.middleware.js';
+import urlRouter from './router/url.router.js'
 
 const app = express();
 const PORT = process.env.PORT ?? 8000;
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
   res.send('API Working');   // 👈 Must add this
 });
 
+app.use(urlRouter)
 app.use('/user', userRouter);
 
 app.listen(PORT, () => {
