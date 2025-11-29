@@ -3,18 +3,13 @@ import { shortenPostRequestBodySchema } from '../validation/request.validation.j
 import {db} from '../db/index.js'
 import {urlsTable} from '../model/index.js';
 import { nanoid } from 'nanoid';
+import { ensureAuthenticated } from '../middleware/auth.middleware.js';
+import { eq } from 'drizzle-orm';
 
 const router =express.Router();
 
-router.post('/shorten',async function (req,res) {
-    const userID =req.user?.id;
 
-    if(!userID){
-        return res
-          .status(401)
-          .json({error:'you most be logged in to access this resource'})
-    }
-
+router.post('/shorten',ensureAuthenticated,async function (req,res) {
     const validationResult =await shortenPostRequestBodySchema.safeParseAsync(req.body);
 
     if(validationResult.error){
@@ -42,5 +37,19 @@ router.post('/shorten',async function (req,res) {
         })
     
 })
+
+
+router.get('/:shortcode',async function (req,res) {
+    const code =req.params.shortcode;
+    const [result] =await db.select({targetURL:urlsTable.targetURL}).from(urlsTable).where(eq(urlsTable.shortCode,code))
+
+    if(!result ){
+        return res.status(404).json({error:'Invalid URL'})
+    }
+
+    return res.status(404).json({error:"Invalid URL"})
+})
+
+
 
 export default router;

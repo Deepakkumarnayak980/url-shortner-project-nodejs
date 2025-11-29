@@ -18,8 +18,9 @@ app.get('/', (req, res) => {
   res.send('API Working');   // 👈 Must add this
 });
 
-app.use(urlRouter)
+
 app.use('/user', userRouter);
+app.use(urlRouter)
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT ${PORT}`);
